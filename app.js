@@ -1,16 +1,15 @@
 "use strict";
 const display = document.getElementById("display");
 const buttons = document.querySelectorAll(".btn");
-let currentInput = ""; // Store the current expression that the user inputs
-let operator = ""; // Current operator (if any)
-let resultDisplayed = false; // To check if the result is being displayed
+let currentInput = "";
+let resultDisplayed = false;
 buttons.forEach((button) => {
     button.addEventListener("click", () => {
         const value = button.value;
         if (!isNaN(Number(value)) || value === "0" || value === "00" || value === ".") {
             // Handle numbers and decimal point
             if (resultDisplayed) {
-                // If a result was just displayed, start fresh
+                // If a result was just displayed, start fresh unless appending new numbers
                 currentInput = "";
                 resultDisplayed = false;
             }
@@ -29,7 +28,7 @@ buttons.forEach((button) => {
         else if (value === "=") {
             // Calculate result and display it
             try {
-                const result = eval(currentInput); // Use eval to evaluate the string expression
+                const result = calculate(currentInput); // Use the calculate function
                 display.value = result.toString();
                 currentInput = result.toString(); // Store result as the new current input
                 resultDisplayed = true;
@@ -41,16 +40,34 @@ buttons.forEach((button) => {
         }
         else {
             // Handle operators (+, -, *, /, %)
-            if (!resultDisplayed) {
-                currentInput += ` ${value} `; // Add operator with spaces around it
-                display.value = currentInput;
+            if (resultDisplayed) {
+                // If a result was displayed, continue from the current result
+                resultDisplayed = false;
             }
+            currentInput += value; // Add operator
+            display.value = currentInput;
         }
     });
 });
 function clearDisplay() {
     currentInput = "";
-    operator = "";
     display.value = "";
     resultDisplayed = false;
+}
+function calculate(expression) {
+    // Replace invalid characters and prepare expression
+    const sanitizedExpression = expression.replace(/[^0-9+\-*/().]/g, "");
+    try {
+        // Use Function constructor for safer evaluation
+        const result = new Function(`return ${sanitizedExpression}`)();
+        if (typeof result === "number" && !isNaN(result)) {
+            return result;
+        }
+        else {
+            throw new Error("Invalid calculation");
+        }
+    }
+    catch (_a) {
+        throw new Error("Invalid expression");
+    }
 }
