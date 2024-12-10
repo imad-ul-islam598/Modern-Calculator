@@ -68,3 +68,5 @@ function calculate(expression: string): number {
     throw new Error("Invalid expression");
   }
 }
+
+// IMAD UL ISLAM
